@@ -13,9 +13,26 @@ namespace DataParallelism
 {
 	class Program
 	{
-		static void Main()
+		public static void Main()
 		{
-			PlinqDemo();
+			var rnd = new Random();
+			var bmp = new Bitmap(1024, 1024);
+			var array = Enumerable.Range(0, 1024).Select(_ => rnd.Next(256)).ToArray();
+			Parallel.For(0,
+				1024,
+				x =>
+				{
+					for (var y = 0; y < 1024; y++)
+					{
+						lock (bmp)
+						{
+							bmp.SetPixel(x, y, Color.FromArgb(array[Thread.CurrentThread.ManagedThreadId], array[Thread.CurrentThread.ManagedThreadId], array[Thread.CurrentThread.ManagedThreadId]));
+						}
+					}
+				});
+			bmp.Save("result.bmp");
+			bmp.Dispose();
+			//PlinqDemo();
 			//CompareDifferentApproaches();
 
 			//PrimesAndPartitioner();

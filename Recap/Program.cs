@@ -1,41 +1,49 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Recap
 {
     class Program
     {
+        private static readonly object Locker = new();
+
         static void Main(string[] args)
         {
             var processorNum = 1;
-            // Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)(1 << processorNum);
+            Process.GetCurrentProcess().ProcessorAffinity = (IntPtr)(1 << processorNum);
 
-            var dict = new Dictionary<string, string>();
-            dict["test"] = "test";
+            var dict = new Dictionary<string, string> {["test"] = "test"};
 
+
+            var list = new List<long>();
+            var n = 100;
+            var ticks = 0L;
+            var cacheTicks = ticks;
+            long failedAfter = 0;
             var t = new Thread(() =>
             {
-                while(true)
-                    dict[Guid.NewGuid().ToString()] = "test";
+                var sw = new Stopwatch();
+                sw.Start();
+                while (true)
+                {
+                    ticks = sw.ElapsedTicks;
+                }
             });
             t.Start();
-
-            long failedAfter = 0;
-            string value;
-            try
+            while (list.Count != n)
             {
-                while(true)
+                if (ticks != cacheTicks)
                 {
-                    value = dict["test"];
-                    failedAfter++;
+                    list.Add(ticks - cacheTicks);
+                    cacheTicks = ticks;
                 }
             }
-            catch(Exception e)
-            {
-                Console.WriteLine($"Failed after {failedAfter} iterations: {e}");
-            }
+            Console.WriteLine(string.Join("\n", list.Select(x => (double)x / 2 / Stopwatch.Frequency * 1000)));
+            Console.ReadLine();
         }
     }
 }

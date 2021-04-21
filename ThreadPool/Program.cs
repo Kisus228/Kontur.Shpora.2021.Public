@@ -48,7 +48,7 @@ namespace ThreadPool
 			countdowns.ForEach(c => c.Wait());
 		}
 
-		[TestCase(1000), Explicit("Next level")]
+		[TestCase(1000)]
 		public void TestNoSleepInDispatchLoop(int iterations)
 		{
 			using var threadPool = CreateThreadPool(4);
@@ -59,7 +59,7 @@ namespace ThreadPool
 			Assert.Less(stopwatch.ElapsedMilliseconds, iterations);
 		}
 
-		[Test, Explicit("Next level")]
+		[Test]
 		public void TestNoSpinInDispatchLoop()
 		{
 			using var threadPool = CreateThreadPool(Environment.ProcessorCount * 100);
