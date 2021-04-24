@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading;
 
 namespace ReaderWriterLock
@@ -57,7 +55,8 @@ namespace ReaderWriterLock
             {
                 lock (WaitObject)
                 {
-                    Monitor.Wait(WaitObject);
+                    if (Interlocked.CompareExchange(ref lockObject, 0, 0) != 0)
+                        Monitor.Wait(WaitObject);
                 }
             }
         }
